@@ -1,0 +1,14 @@
+# Session state
+.image-gen-session.json
+session.json
+
+# Environment
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Generated images (test outputs)
+generated-images/
