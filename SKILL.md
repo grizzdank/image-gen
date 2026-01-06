@@ -39,38 +39,38 @@ The script auto-bootstraps into its venv, so you can invoke it any way:
 ```bash
 # All of these work identically:
 ~/.claude/skills/image-gen/generate.py generate "prompt"
-python ~/.claude/skills/image-gen/generate.py generate "prompt"
-python3 ~/.claude/skills/image-gen/generate.py generate "prompt"
+~/.claude/skills/image-gen/generate.py generate "prompt"
+~/.claude/skills/image-gen/generate.py generate "prompt"
 
 # Generate new image (auto model selection)
-python ~/.claude/skills/image-gen/generate.py generate "a sunset over mountains"
+~/.claude/skills/image-gen/generate.py generate "a sunset over mountains"
 
 # Force specific model
-python ~/.claude/skills/image-gen/generate.py generate "a cat wearing a hat" -m gpt-image-1.5
+~/.claude/skills/image-gen/generate.py generate "a cat wearing a hat" -m gpt-image-1.5
 
 # Transparent background (auto-selects gpt-image-1.5)
-python ~/.claude/skills/image-gen/generate.py generate "a logo on transparent background" --transparent
+~/.claude/skills/image-gen/generate.py generate "a logo on transparent background" --transparent
 
 # Fast draft mode (auto-selects nano-banana)
-python ~/.claude/skills/image-gen/generate.py generate "quick sketch of a house" --fast
+~/.claude/skills/image-gen/generate.py generate "quick sketch of a house" --fast
 
 # High resolution with aspect ratio (Gemini)
-python ~/.claude/skills/image-gen/generate.py generate "landscape photo" --aspect-ratio 16:9 --image-size 4K
+~/.claude/skills/image-gen/generate.py generate "landscape photo" --aspect-ratio 16:9 --image-size 4K
 
 # Edit the current image (iterative refinement)
-python ~/.claude/skills/image-gen/generate.py edit "make the sky more orange"
+~/.claude/skills/image-gen/generate.py edit "make the sky more orange"
 
 # Edit a specific image
-python ~/.claude/skills/image-gen/generate.py edit "add a boat" -i /path/to/image.png
+~/.claude/skills/image-gen/generate.py edit "add a boat" -i /path/to/image.png
 
 # Set output directory
-python ~/.claude/skills/image-gen/generate.py set-dir /path/to/output
+~/.claude/skills/image-gen/generate.py set-dir /path/to/output
 
 # Check session status
-python ~/.claude/skills/image-gen/generate.py status
+~/.claude/skills/image-gen/generate.py status
 
 # Clear session (start fresh)
-python ~/.claude/skills/image-gen/generate.py clear
+~/.claude/skills/image-gen/generate.py clear
 ```
 
 ## Workflow
