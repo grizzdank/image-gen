@@ -126,20 +126,31 @@ def image_to_base64(image_path: str) -> tuple[str, str]:
 
 
 def save_image(base64_data: str, output_dir: Path, prefix: str = "gen") -> Path:
-    """Save base64 image to file."""
+    """Save base64 image to file with correct extension."""
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Detect format from data URL or default to png
+    ext = "png"
+    if base64_data.startswith("data:"):
+        # Parse: data:image/jpeg;base64,<data>
+        header, base64_data = base64_data.split(",", 1)
+        mime_type = header.split(";")[0].replace("data:", "")
+        ext_map = {
+            "image/png": "png",
+            "image/jpeg": "jpg",
+            "image/jpg": "jpg",
+            "image/webp": "webp",
+            "image/gif": "gif",
+        }
+        ext = ext_map.get(mime_type, "png")
 
     # Generate unique filename
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    existing = list(output_dir.glob(f"{prefix}_{timestamp}_*.png"))
+    existing = list(output_dir.glob(f"{prefix}_{timestamp}_*.{ext}"))
     index = len(existing) + 1
-    filename = f"{prefix}_{timestamp}_{index:03d}.png"
+    filename = f"{prefix}_{timestamp}_{index:03d}.{ext}"
 
     output_path = output_dir / filename
-
-    # Handle data URL format
-    if base64_data.startswith("data:"):
-        base64_data = base64_data.split(",", 1)[1]
 
     with open(output_path, "wb") as f:
         f.write(base64.b64decode(base64_data))
