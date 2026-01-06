@@ -9,12 +9,27 @@ import base64
 import json
 import os
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
+
+# === Venv Bootstrap ===
+# Ensures script runs in its own venv regardless of how it's invoked
+SKILL_DIR = Path(__file__).parent.resolve()
+VENV_PYTHON = SKILL_DIR / ".venv" / "bin" / "python3"
+
+def _ensure_venv():
+    """Re-exec with venv Python if we're not already in it."""
+    if VENV_PYTHON.exists() and Path(sys.executable).resolve() != VENV_PYTHON.resolve():
+        os.execv(str(VENV_PYTHON), [str(VENV_PYTHON)] + sys.argv)
+
+_ensure_venv()
 
 # === Configuration ===
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+MAX_RETRIES = 3
+RETRY_BACKOFF_BASE = 2  # seconds
 
 def get_session_file() -> Path:
     """Get project-local session file path."""
@@ -167,16 +182,29 @@ def generate_openrouter(prompt: str, model: str, input_image: str = None,
         if image_size:
             payload["image_config"]["image_size"] = image_size
 
-    response = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type": "application/json",
-        },
-        json=payload,
-        timeout=120,
-    )
-    response.raise_for_status()
+    # Retry loop for transient network/SSL errors
+    last_error = None
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=120,
+            )
+            response.raise_for_status()
+            break
+        except requests.exceptions.RequestException as e:
+            last_error = e
+            if attempt < MAX_RETRIES - 1:
+                wait_time = RETRY_BACKOFF_BASE ** attempt
+                print(f"  Retry {attempt + 1}/{MAX_RETRIES} after {wait_time}s: {e}")
+                time.sleep(wait_time)
+            else:
+                raise last_error
 
     result = response.json()
 
@@ -219,43 +247,56 @@ def generate_openai(prompt: str, model: str, input_image: str = None,
         "Content-Type": "application/json",
     }
 
-    if input_image:
-        # Image edit endpoint
-        with open(input_image, "rb") as f:
-            files = {"image": f}
-            data = {
-                "model": model,
-                "prompt": prompt,
-                "size": size,
-                "response_format": "b64_json",
-            }
-            response = requests.post(
-                "https://api.openai.com/v1/images/edits",
-                headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
-                files=files,
-                data=data,
-                timeout=120,
-            )
-    else:
-        # Image generation endpoint
-        payload = {
-            "model": model,
-            "prompt": prompt,
-            "size": size,
-            "quality": quality,
-            "output_format": output_format,
-            "background": background,
-            "response_format": "b64_json",
-            "n": 1,
-        }
-        response = requests.post(
-            "https://api.openai.com/v1/images/generations",
-            headers=headers,
-            json=payload,
-            timeout=120,
-        )
+    # Retry loop for transient network/SSL errors
+    last_error = None
+    for attempt in range(MAX_RETRIES):
+        try:
+            if input_image:
+                # Image edit endpoint - reopen file on each attempt
+                with open(input_image, "rb") as f:
+                    files = {"image": f}
+                    data = {
+                        "model": model,
+                        "prompt": prompt,
+                        "size": size,
+                        "response_format": "b64_json",
+                    }
+                    response = requests.post(
+                        "https://api.openai.com/v1/images/edits",
+                        headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
+                        files=files,
+                        data=data,
+                        timeout=120,
+                    )
+            else:
+                # Image generation endpoint
+                payload = {
+                    "model": model,
+                    "prompt": prompt,
+                    "size": size,
+                    "quality": quality,
+                    "output_format": output_format,
+                    "background": background,
+                    "response_format": "b64_json",
+                    "n": 1,
+                }
+                response = requests.post(
+                    "https://api.openai.com/v1/images/generations",
+                    headers=headers,
+                    json=payload,
+                    timeout=120,
+                )
+            response.raise_for_status()
+            break
+        except requests.exceptions.RequestException as e:
+            last_error = e
+            if attempt < MAX_RETRIES - 1:
+                wait_time = RETRY_BACKOFF_BASE ** attempt
+                print(f"  Retry {attempt + 1}/{MAX_RETRIES} after {wait_time}s: {e}")
+                time.sleep(wait_time)
+            else:
+                raise last_error
 
-    response.raise_for_status()
     result = response.json()
 
     return result["data"][0]["b64_json"]

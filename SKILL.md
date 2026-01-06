@@ -34,7 +34,14 @@ Override with `-m <model>` or use `--transparent` / `--fast` flags.
 
 ## Quick Reference
 
+The script auto-bootstraps into its venv, so you can invoke it any way:
+
 ```bash
+# All of these work identically:
+~/.claude/skills/image-gen/generate.py generate "prompt"
+python ~/.claude/skills/image-gen/generate.py generate "prompt"
+python3 ~/.claude/skills/image-gen/generate.py generate "prompt"
+
 # Generate new image (auto model selection)
 python ~/.claude/skills/image-gen/generate.py generate "a sunset over mountains"
 
@@ -130,11 +137,13 @@ Requires these environment variables:
 
 ## Error Handling
 
-If generation fails:
+**Automatic Retries**: The script automatically retries up to 3 times with exponential backoff (1s, 2s, 4s) for transient network/SSL errors. You'll see retry messages in the output.
+
+If generation still fails after retries:
 1. Check API keys are set: `echo $OPENROUTER_API_KEY` / `echo $OPENAI_API_KEY`
 2. Check network connectivity
 3. Try a different model
-4. Check rate limits (wait and retry)
+4. Check rate limits (wait longer and retry)
 
 ## Session State
 
