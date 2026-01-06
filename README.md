@@ -2,6 +2,8 @@
 
 A Claude Code skill for generating and editing images using AI models. Supports Google's Gemini image models (via OpenRouter) and OpenAI's gpt-image models.
 
+![Demo](demo.gif)
+
 ## Features
 
 - **Multi-model support**: Gemini Nano Banana, Nano Banana Pro, GPT-Image-1, GPT-Image-1.5, GPT-Image-Mini
