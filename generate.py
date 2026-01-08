@@ -263,14 +263,13 @@ def generate_openai(prompt: str, model: str, input_image: str = None,
     for attempt in range(MAX_RETRIES):
         try:
             if input_image:
-                # Image edit endpoint - reopen file on each attempt
+                # Image edit endpoint
                 with open(input_image, "rb") as f:
                     files = {"image": f}
                     data = {
                         "model": model,
                         "prompt": prompt,
                         "size": size,
-                        "response_format": "b64_json",
                     }
                     response = requests.post(
                         "https://api.openai.com/v1/images/edits",
@@ -288,7 +287,6 @@ def generate_openai(prompt: str, model: str, input_image: str = None,
                     "quality": quality,
                     "output_format": output_format,
                     "background": background,
-                    "response_format": "b64_json",
                     "n": 1,
                 }
                 response = requests.post(
