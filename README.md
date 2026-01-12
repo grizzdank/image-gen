@@ -128,6 +128,27 @@ The script automatically retries up to 3 times with exponential backoff (1s, 2s,
 
 This skill is designed for [Claude Code](https://claude.com/claude-code). Place the `SKILL.md` file in your skills directory and Claude will automatically use it when you ask to generate or edit images.
 
+## Sponsors
+
+Thanks to these awesome people for supporting image-gen! 💜
+
+### 💎 Sponsors
+<!-- sponsors:sponsor -->
+*Your name/logo here*
+<!-- sponsors:sponsor -->
+
+### 🚀 Backers
+<!-- sponsors:backer -->
+*Your name here*
+<!-- sponsors:backer -->
+
+### ☕ Supporters
+<!-- sponsors:coffee -->
+*Your name here*
+<!-- sponsors:coffee -->
+
+[Become a sponsor →](https://github.com/sponsors/grizzdank)
+
 ## License
 
 MIT
