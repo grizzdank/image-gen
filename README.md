@@ -6,7 +6,7 @@ A Claude Code skill for generating and editing images using AI models. Supports 
 
 ## Features
 
-- **Multi-model support**: Gemini Nano Banana, Nano Banana Pro, GPT-Image-1, GPT-Image-1.5, GPT-Image-Mini
+- **Multi-model support**: Gemini Nano Banana, Nano Banana Pro, GPT-Image-1, GPT-Image-1.5, GPT-Image-2, GPT-Image-Mini
 - **Smart model selection**: Automatically picks the best model based on your prompt
 - **Iterative refinement**: Edit generated images with follow-up prompts
 - **Session state**: Tracks current image and output directory per-project
@@ -80,7 +80,8 @@ The script auto-bootstraps into its venv, so invoke it however you like:
 | `nano-banana` | Gemini 2.5 Flash Image | Fast generation, high volume |
 | `nano-banana-pro` | Gemini 3 Pro Image | 4K resolution, complex scenes (default) |
 | `gpt-image` | OpenAI gpt-image-1 | General purpose |
-| `gpt-image-1.5` | OpenAI gpt-image-1.5 | Transparency, text rendering |
+| `gpt-image-1.5` | OpenAI gpt-image-1.5 | Transparency, stable |
+| `gpt-image-2` | OpenAI gpt-image-2 | Latest OpenAI; reportedly stronger text, edit fidelity, realism |
 | `gpt-image-mini` | OpenAI gpt-image-1-mini | Fast, lower cost |
 
 ## Smart Model Selection
@@ -89,11 +90,12 @@ When you don't specify a model, the script auto-selects based on your prompt:
 
 | Detected Intent | Selected Model | Reason |
 |----------------|----------------|--------|
-| Transparency keywords | gpt-image-1.5 | Only OpenAI supports transparent PNG |
-| Text/typography | gpt-image-1.5 | Better text rendering |
+| Transparency keywords | gpt-image-1.5 | Only OpenAI supports transparent PNG (2.0 transparency unverified) |
+| Text/typography | gpt-image-2 | Stronger text rendering than 1.5 |
 | "4K", "high res", "poster" | nano-banana-pro | Supports up to 4K |
 | "quick", "draft", "sketch" | nano-banana | Faster iteration |
-| Default | nano-banana-pro | Best overall quality |
+| `edit` command (no other signal) | gpt-image-2 | Better edit-instruction following |
+| Default (new generation) | nano-banana-pro | Best overall quality |
 
 ## Configuration
 

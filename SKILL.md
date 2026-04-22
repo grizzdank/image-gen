@@ -1,6 +1,6 @@
 ---
 name: image-gen
-description: Generate and edit images using AI models. Use when the user asks to create images, generate visuals, make graphics, create artwork, generate a picture, draw something, or edit/refine an existing image. Supports Gemini Nano Banana Pro (Google) and gpt-image-1.5 (OpenAI).
+description: Generate and edit images using AI models. Use when the user asks to create images, generate visuals, make graphics, create artwork, generate a picture, draw something, or edit/refine an existing image. Supports Gemini Nano Banana Pro (Google) and gpt-image-2 (OpenAI).
 allowed-tools: Bash, Read
 ---
 
@@ -15,7 +15,8 @@ Generate and iteratively refine images using state-of-the-art AI models.
 | `nano-banana` | Gemini 2.5 Flash Image | Fast generation, high volume |
 | `nano-banana-pro` | Gemini 3 Pro Image | 4K resolution, complex scenes, default |
 | `gpt-image` | OpenAI gpt-image-1 | General purpose |
-| `gpt-image-1.5` | OpenAI gpt-image-1.5 | Latest OpenAI, transparency support |
+| `gpt-image-1.5` | OpenAI gpt-image-1.5 | Transparency, stable |
+| `gpt-image-2` | OpenAI gpt-image-2 | Latest OpenAI; reportedly stronger text, edit fidelity, realism |
 | `gpt-image-mini` | OpenAI gpt-image-1-mini | Fast, lower cost |
 
 ## Smart Model Selection
@@ -24,11 +25,12 @@ By default, the script auto-selects the best model based on the prompt:
 
 | Detected Intent | Selected Model | Reason |
 |----------------|----------------|--------|
-| Transparency keywords | gpt-image-1.5 | Only OpenAI supports transparent PNG |
-| Text/typography | gpt-image-1.5 | Better text rendering |
+| Transparency keywords | gpt-image-1.5 | Only OpenAI supports transparent PNG (2.0 transparency unverified) |
+| Text/typography | gpt-image-2 | Stronger text rendering than 1.5 |
 | "4K", "high res", "poster" | nano-banana-pro | Supports up to 4K |
 | "quick", "draft", "sketch" | nano-banana | Faster iteration |
-| Default | nano-banana-pro | Best overall quality |
+| `edit` command (no other signal) | gpt-image-2 | Better edit-instruction following |
+| Default (new generation) | nano-banana-pro | Best overall quality |
 
 Override with `-m <model>` or use `--transparent` / `--fast` flags.
 
@@ -105,15 +107,19 @@ generate.py edit "add warm light in the windows"
 ### Model Selection Guidelines
 
 **Choose `nano-banana-pro` (default) when:**
+- New generation without other strong signals
 - User wants high resolution (up to 4K)
 - Complex scenes with multiple elements
 - Specific aspect ratios needed
-- Image editing with multiple reference images
+
+**Choose `gpt-image-2` when:**
+- Editing an existing image (better instruction-following per early reports)
+- Detailed text/typography in images
+- Photorealism is the priority
 
 **Choose `gpt-image-1.5` when:**
-- User needs transparency (PNG with transparent background)
-- Detailed text rendering in images
-- User specifically requests OpenAI
+- User needs transparency (PNG with transparent background) — 2.0 transparency support not yet verified
+- 2.0 produces unsatisfying results for a given prompt
 
 **Choose `nano-banana` or `gpt-image-mini` when:**
 - Quick iterations/drafts

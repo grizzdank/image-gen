@@ -42,6 +42,7 @@ MODELS = {
     # Direct OpenAI models
     "gpt-image": "gpt-image-1",
     "gpt-image-1.5": "gpt-image-1.5",
+    "gpt-image-2": "gpt-image-2",
     "gpt-image-mini": "gpt-image-1-mini",
 }
 
@@ -49,17 +50,18 @@ DEFAULT_MODEL = "nano-banana-pro"
 
 
 def select_model(prompt: str, transparent: bool = False, high_res: bool = False,
-                 fast: bool = False, text_heavy: bool = False) -> str:
+                 fast: bool = False, text_heavy: bool = False,
+                 is_edit: bool = False) -> str:
     """
     Smart model selection based on task requirements.
 
-    Selection logic:
-    - Transparency needed → gpt-image-1.5 (only OpenAI supports transparent PNG)
-    - Text/typography heavy → gpt-image-1.5 (better text rendering)
-    - 4K / high resolution → nano-banana-pro (supports up to 4K)
-    - Fast/draft iteration → nano-banana or gpt-image-mini
-    - Complex scenes, multiple elements → nano-banana-pro
-    - Default → nano-banana-pro (best overall quality)
+    Selection logic (priority order):
+    - Transparency needed → gpt-image-1.5 (proven; 2.0 transparency unverified)
+    - Text/typography heavy → gpt-image-2 (stronger text rendering than 1.5)
+    - Explicit --fast → nano-banana (user wants speed)
+    - Explicit --high-res / 4K → nano-banana-pro (user wants resolution)
+    - Edit operation, no other signal → gpt-image-2 (better edit-instruction following)
+    - Default (new generation) → nano-banana-pro (best overall quality)
     """
     prompt_lower = prompt.lower()
 
@@ -75,7 +77,7 @@ def select_model(prompt: str, transparent: bool = False, high_res: bool = False,
                     "heading", "sign", "poster with text", "logo with text",
                     "banner", "quote", "writing"]
     if text_heavy or any(kw in prompt_lower for kw in text_keywords):
-        return "gpt-image-1.5"
+        return "gpt-image-2"
 
     # Check for fast/draft mode
     fast_keywords = ["quick", "draft", "rough", "sketch", "fast", "test"]
@@ -87,6 +89,10 @@ def select_model(prompt: str, transparent: bool = False, high_res: bool = False,
                        "print quality", "large format", "poster", "wallpaper"]
     if high_res or any(kw in prompt_lower for kw in highres_keywords):
         return "nano-banana-pro"
+
+    # Edit operations without other signals: prefer gpt-image-2 for edit fidelity
+    if is_edit:
+        return "gpt-image-2"
 
     # Default to nano-banana-pro for best overall quality
     return "nano-banana-pro"
@@ -314,14 +320,16 @@ def generate_openai(prompt: str, model: str, input_image: str = None,
 def generate(prompt: str, model_alias: str = None, input_image: str = None,
              output_dir: str = None, aspect_ratio: str = None,
              image_size: str = None, size: str = "auto",
-             transparent: bool = False, fast: bool = False) -> str:
+             transparent: bool = False, fast: bool = False,
+             is_edit: bool = False) -> str:
     """Main generation function."""
     session = load_session()
 
     # Resolve model - use smart selection if not explicitly specified
     if model_alias is None or model_alias == "auto":
         model_alias = select_model(prompt, transparent=transparent, fast=fast,
-                                   high_res=(image_size == "4K"))
+                                   high_res=(image_size == "4K"),
+                                   is_edit=is_edit)
         print(f"Auto-selected model: {model_alias}")
 
     if model_alias not in MODELS:
@@ -456,6 +464,7 @@ def main():
                 output_dir=args.output,
                 transparent=args.transparent,
                 fast=args.fast,
+                is_edit=True,
             )
             print(f"\nEdited: {result}")
 
